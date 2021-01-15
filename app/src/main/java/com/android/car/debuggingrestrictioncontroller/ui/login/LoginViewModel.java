@@ -1,20 +1,19 @@
 package com.android.car.debuggingrestrictioncontroller.ui.login;
 
+import android.util.Patterns;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import android.util.Patterns;
-
+import com.android.car.debuggingrestrictioncontroller.R;
 import com.android.car.debuggingrestrictioncontroller.data.LoginRepository;
 import com.android.car.debuggingrestrictioncontroller.data.Result;
 import com.android.car.debuggingrestrictioncontroller.data.model.LoggedInUser;
-import com.android.car.debuggingrestrictioncontroller.R;
 
 public class LoginViewModel extends ViewModel {
 
-  private MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
-  private MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
-  private LoginRepository loginRepository;
+  private final MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
+  private final MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
+  private final LoginRepository loginRepository;
 
   LoginViewModel(LoginRepository loginRepository) {
     this.loginRepository = loginRepository;
@@ -36,8 +35,17 @@ public class LoginViewModel extends ViewModel {
       LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
       loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
     } else {
-      loginResult.setValue(new LoginResult(R.string.login_failed));
+      loginResult.setValue(new LoginResult(R.string.not_signed_in));
     }
+  }
+
+  public void logout() {
+    loginRepository.logout();
+    loginResult.setValue(new LoginResult(R.string.not_signed_in));
+  }
+
+  boolean isUserLoggedIn() {
+    return loginRepository.isLoggedIn();
   }
 
   public void loginDataChanged(String username, String password) {

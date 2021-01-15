@@ -1,12 +1,7 @@
 package com.android.car.debuggingrestrictioncontroller.ui.login;
 
-import android.app.Activity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
+import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import androidx.appcompat.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -16,14 +11,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
-
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 import com.android.car.debuggingrestrictioncontroller.R;
-import com.android.car.debuggingrestrictioncontroller.ui.login.LoginViewModel;
-import com.android.car.debuggingrestrictioncontroller.ui.login.LoginViewModelFactory;
+import com.android.car.debuggingrestrictioncontroller.ui.token.TokenActivity;
+import com.google.android.material.snackbar.Snackbar;
 
 public class LoginActivity extends AppCompatActivity {
 
+  private static final String TAG = LoginActivity.class.getSimpleName();
+  private static final int REQUEST_TOKEN = 1;
   private LoginViewModel loginViewModel;
 
   @Override
@@ -36,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     final EditText usernameEditText = findViewById(R.id.username);
     final EditText passwordEditText = findViewById(R.id.password);
     final Button loginButton = findViewById(R.id.login);
+    final Button nextButton = findViewById(R.id.next);
     final ProgressBar loadingProgressBar = findViewById(R.id.loading);
 
     loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
@@ -62,15 +63,14 @@ public class LoginActivity extends AppCompatActivity {
         }
         loadingProgressBar.setVisibility(View.GONE);
         if (loginResult.getError() != null) {
-          showLoginFailed(loginResult.getError());
+          showSnackBar(R.string.not_signed_in);
+          loginButton.setText(R.string.button_sign_in);
+          nextButton.setEnabled(false);
         }
         if (loginResult.getSuccess() != null) {
-          updateUiWithUser(loginResult.getSuccess());
+          loginButton.setText(R.string.button_sign_out);
+          nextButton.setEnabled(true);
         }
-        setResult(Activity.RESULT_OK);
-
-        //Complete and destroy login activity once successful
-        finish();
       }
     });
 
@@ -109,19 +109,45 @@ public class LoginActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         loadingProgressBar.setVisibility(View.VISIBLE);
-        loginViewModel.login(usernameEditText.getText().toString(),
-            passwordEditText.getText().toString());
+        if (!loginViewModel.isUserLoggedIn()) {
+          loginViewModel.login(usernameEditText.getText().toString(),
+              passwordEditText.getText().toString());
+        } else {
+          loginViewModel.logout();
+        }
+      }
+    });
+
+    nextButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent intent = new Intent(getApplicationContext(), TokenActivity.class);
+        startActivityForResult(intent, REQUEST_TOKEN);
       }
     });
   }
 
-  private void updateUiWithUser(LoggedInUserView model) {
-    String welcome = getString(R.string.welcome) + model.getDisplayName();
-    // TODO : initiate successful logged in experience
-    Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    if (requestCode == REQUEST_TOKEN) {
+      if (resultCode == RESULT_OK) {
+        showSnackBar(R.string.token_authorized);
+      } else if (resultCode == RESULT_CANCELED) {
+        showSnackBar(R.string.token_unauthorized);
+      }
+    }
+    super.onActivityResult(requestCode, resultCode, data);
   }
 
-  private void showLoginFailed(@StringRes Integer errorString) {
-    Toast.makeText(getApplicationContext(), errorString, Toast.LENGTH_SHORT).show();
+  private void showSnackBar(@StringRes Integer id) {
+    final Snackbar snackbar = Snackbar
+        .make(findViewById(R.id.login_container), id, Snackbar.LENGTH_SHORT);
+    snackbar.setAction(R.string.dismiss, new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        snackbar.dismiss();
+      }
+    });
+    snackbar.show();
   }
 }

@@ -1,9 +1,8 @@
 package com.android.car.debuggingrestrictioncontroller.ui.login;
 
+import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.annotation.NonNull;
-
 import com.android.car.debuggingrestrictioncontroller.data.LoginDataSource;
 import com.android.car.debuggingrestrictioncontroller.data.LoginRepository;
 

@@ -1,7 +1,6 @@
 package com.android.car.debuggingrestrictioncontroller.data;
 
 import com.android.car.debuggingrestrictioncontroller.data.model.LoggedInUser;
-
 import java.io.IOException;
 
 /**
