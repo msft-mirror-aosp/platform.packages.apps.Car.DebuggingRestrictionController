@@ -2,9 +2,7 @@
   <string name="app_name">DebuggingRestrictionController</string>
   <!-- Strings related to login -->
   <string name="prompt_email">Email</string>
-  <string name="default_email">aa-security@google.com</string>
   <string name="prompt_password">Password</string>
-  <string name="default_password">aa-security</string>
   <string name="button_sign_in">Sign In</string>
   <string name="button_sign_out">Sign Out</string>
   <string name="button_next">Next</string>
