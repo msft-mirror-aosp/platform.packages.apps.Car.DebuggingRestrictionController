@@ -68,7 +68,7 @@ public class TokenActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         setResult(Activity.RESULT_CANCELED);
-        finish();
+        finishAffinity();
       }
     });
   }

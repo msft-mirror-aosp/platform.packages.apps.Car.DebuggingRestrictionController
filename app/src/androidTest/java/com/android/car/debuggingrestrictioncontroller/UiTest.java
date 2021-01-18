@@ -21,12 +21,15 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityResult;
 import android.content.Context;
 import android.content.Intent;
+import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.action.ViewActions;
+import androidx.test.espresso.idling.CountingIdlingResource;
 import androidx.test.espresso.intent.Intents;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import com.android.car.debuggingrestrictioncontroller.ui.login.LoginActivity;
 import com.android.car.debuggingrestrictioncontroller.ui.token.TokenActivity;
+import com.google.firebase.auth.FirebaseAuth;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -36,31 +39,32 @@ import org.junit.runner.RunWith;
 @RunWith(AndroidJUnit4.class)
 public class UiTest {
 
-  private static final String TEST_EMAIL = "aa-test@google.com";
-  private static final String TEST_PASSWORD = "aa-test";
+  private static final String TEST_EMAIL = BuildConfig.DRC_TEST_EMAIL;
+  private static final String TEST_PASSWORD = BuildConfig.DRC_TEST_PASSWORD;
   private static final String INVALID_EMAIL = "invalid_email@";
   private static final String SHORT_PASSWORD = "word";
+  private static final String WRONG_PASSWORD = "wrong_password";
+  private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
   @Rule
   public ActivityScenarioRule<LoginActivity> activityScenarioRule =
       new ActivityScenarioRule<LoginActivity>(LoginActivity.class);
+  private CountingIdlingResource idlingResource;
 
   @Before
   public void setUp() {
+    activityScenarioRule.getScenario().onActivity(activity -> {
+      idlingResource = activity.getIdlingResource();
+    });
+    IdlingRegistry.getInstance().register(idlingResource);
     Intents.init();
+    firebaseAuth.signOut();
   }
 
   @After
   public void tearDown() {
+    IdlingRegistry.getInstance().unregister(idlingResource);
     Intents.release();
-  }
-
-  @Test
-  public void initialButtonStates() {
-    onView(withId(R.id.login)).check(matches(isDisplayed()));
-    onView(withId(R.id.login)).check(matches(not(isEnabled())));
-
-    onView(withId(R.id.next)).check(matches(isDisplayed()));
-    onView(withId(R.id.next)).check(matches(not(isEnabled())));
+    firebaseAuth.signOut();
   }
 
   @Test
@@ -86,6 +90,42 @@ public class UiTest {
   }
 
   @Test
+  public void initialButtonStates() {
+    onView(withId(R.id.login)).check(matches(isDisplayed()));
+    onView(withId(R.id.login)).check(matches(not(isEnabled())));
+    onView(withId(R.id.next)).check(matches(isDisplayed()));
+    onView(withId(R.id.next)).check(matches(not(isEnabled())));
+  }
+
+  @Test
+  public void wrongPassword() {
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(WRONG_PASSWORD), ViewActions.pressImeActionButton());
+    onView(withId(R.id.next)).check(matches(not(isEnabled())));
+    firebaseAuth.signOut();
+  }
+
+  @Test
+  public void userLogout() {
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
+
+    onView(withId(R.id.login)).check(matches(isEnabled()));
+    onView(withId(R.id.login)).check(matches(withText(R.string.button_sign_in)));
+    onView(withId(R.id.login)).perform(click());
+    onView(withId(R.id.login)).check(matches(isEnabled()));
+    onView(withId(R.id.login)).check(matches(withText(R.string.button_sign_out)));
+    onView(withId(R.id.login)).perform(click());
+    onView(withId(R.id.login)).check(matches(isEnabled()));
+    onView(withId(R.id.login)).check(matches(withText(R.string.button_sign_in)));
+    firebaseAuth.signOut();
+  }
+
+  @Test
   public void startTokenActivity() {
     onView(withId(R.id.username))
         .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
@@ -103,6 +143,7 @@ public class UiTest {
     onView(withId(R.id.agreement)).check(matches(isDisplayed()));
     onView(withId(R.id.agree)).check(matches(isDisplayed()));
     onView(withId(R.id.disagree)).check(matches(isDisplayed()));
+    firebaseAuth.signOut();
   }
 
   @Test
@@ -125,6 +166,7 @@ public class UiTest {
 
     onView(withId(com.google.android.material.R.id.snackbar_text))
         .check(matches(withText(R.string.token_authorized)));
+    firebaseAuth.signOut();
   }
 
   @Test
@@ -147,5 +189,6 @@ public class UiTest {
 
     onView(withId(com.google.android.material.R.id.snackbar_text))
         .check(matches(withText(R.string.token_unauthorized)));
+    firebaseAuth.signOut();
   }
 }
