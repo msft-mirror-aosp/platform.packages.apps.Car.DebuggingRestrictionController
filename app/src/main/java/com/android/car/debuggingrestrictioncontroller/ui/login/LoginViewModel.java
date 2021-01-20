@@ -5,19 +5,13 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.android.car.debuggingrestrictioncontroller.R;
-import com.android.car.debuggingrestrictioncontroller.data.LoginRepository;
-import com.android.car.debuggingrestrictioncontroller.data.Result;
-import com.android.car.debuggingrestrictioncontroller.data.model.LoggedInUser;
 
 public class LoginViewModel extends ViewModel {
 
+  private static final String TAG = LoginViewModel.class.getSimpleName();
   private final MutableLiveData<LoginFormState> loginFormState = new MutableLiveData<>();
   private final MutableLiveData<LoginResult> loginResult = new MutableLiveData<>();
-  private final LoginRepository loginRepository;
-
-  LoginViewModel(LoginRepository loginRepository) {
-    this.loginRepository = loginRepository;
-  }
+  private boolean isUserSignedIn = false;
 
   LiveData<LoginFormState> getLoginFormState() {
     return loginFormState;
@@ -27,25 +21,28 @@ public class LoginViewModel extends ViewModel {
     return loginResult;
   }
 
-  public void login(String username, String password) {
-    // can be launched in a separate asynchronous job
-    Result<LoggedInUser> result = loginRepository.login(username, password);
+  public boolean isUserSignedIn() {
+    return isUserSignedIn;
+  }
 
-    if (result instanceof Result.Success) {
-      LoggedInUser data = ((Result.Success<LoggedInUser>) result).getData();
-      loginResult.setValue(new LoginResult(new LoggedInUserView(data.getDisplayName())));
-    } else {
-      loginResult.setValue(new LoginResult(R.string.not_signed_in));
-    }
+  public void login(String email, String password) {
+    isUserSignedIn = true;
+    updateUI(true);
   }
 
   public void logout() {
-    loginRepository.logout();
-    loginResult.setValue(new LoginResult(R.string.not_signed_in));
+    isUserSignedIn = false;
+    updateUI(false);
   }
 
-  boolean isUserLoggedIn() {
-    return loginRepository.isLoggedIn();
+  private void updateUI(boolean userSignedIn) {
+    if (userSignedIn) {
+      loginResult.postValue(
+          new LoginResult(
+              new LoggedInUserView("Anonymous")));
+    } else {
+      loginResult.postValue(new LoginResult(R.string.not_signed_in));
+    }
   }
 
   public void loginDataChanged(String username, String password) {
