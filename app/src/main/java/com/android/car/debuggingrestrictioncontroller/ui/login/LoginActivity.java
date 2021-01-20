@@ -12,15 +12,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.test.espresso.idling.CountingIdlingResource;
 import com.android.car.debuggingrestrictioncontroller.R;
-import com.android.car.debuggingrestrictioncontroller.ui.ViewModelFactory;
 import com.android.car.debuggingrestrictioncontroller.ui.token.TokenActivity;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,7 +32,7 @@ public class LoginActivity extends AppCompatActivity {
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
-  private LoginViewModel loginViewModel;
+  private final LoginViewModel loginViewModel = new LoginViewModel();
   private Button loginButton;
   private Button nextButton;
 
@@ -46,8 +45,6 @@ public class LoginActivity extends AppCompatActivity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
-    loginViewModel = new ViewModelProvider(this, new ViewModelFactory())
-        .get(LoginViewModel.class);
 
     final EditText usernameEditText = findViewById(R.id.username);
     final EditText passwordEditText = findViewById(R.id.password);
@@ -55,14 +52,9 @@ public class LoginActivity extends AppCompatActivity {
     nextButton = findViewById(R.id.next);
     final ProgressBar loadingProgressBar = findViewById(R.id.loading);
 
-    updateButtonState();
-
     loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
       @Override
-      public void onChanged(@Nullable LoginFormState loginFormState) {
-        if (loginFormState == null) {
-          return;
-        }
+      public void onChanged(@NonNull LoginFormState loginFormState) {
         loginButton.setEnabled(loginFormState.isDataValid());
         if (loginFormState.getUsernameError() != null) {
           usernameEditText.setError(getString(loginFormState.getUsernameError()));
@@ -75,10 +67,7 @@ public class LoginActivity extends AppCompatActivity {
 
     loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
       @Override
-      public void onChanged(@Nullable LoginResult loginResult) {
-        if (loginResult == null) {
-          return;
-        }
+      public void onChanged(@NonNull LoginResult loginResult) {
         loadingProgressBar.setVisibility(View.GONE);
         if (loginResult.getError() != null) {
           showSnackBar(R.string.not_signed_in);
@@ -91,7 +80,9 @@ public class LoginActivity extends AppCompatActivity {
           loginButton.setText(R.string.button_sign_out);
           nextButton.setEnabled(true);
         }
-        idlingResource.decrement();
+        if (!idlingResource.isIdleNow()) {
+          idlingResource.decrement();
+        }
       }
     });
 
@@ -115,10 +106,10 @@ public class LoginActivity extends AppCompatActivity {
     usernameEditText.addTextChangedListener(afterTextChangedListener);
     passwordEditText.addTextChangedListener(afterTextChangedListener);
     passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-
       @Override
       public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
         if (actionId == EditorInfo.IME_ACTION_DONE) {
+          idlingResource.increment();
           loginViewModel.login(usernameEditText.getText().toString(),
               passwordEditText.getText().toString());
         }

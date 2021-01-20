@@ -37,7 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(AndroidJUnit4.class)
-public class UiTest {
+public class LoginTest {
 
   private static final String TEST_EMAIL = BuildConfig.DRC_TEST_EMAIL;
   private static final String TEST_PASSWORD = BuildConfig.DRC_TEST_PASSWORD;
@@ -45,6 +45,7 @@ public class UiTest {
   private static final String SHORT_PASSWORD = "word";
   private static final String WRONG_PASSWORD = "wrong_password";
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
   @Rule
   public ActivityScenarioRule<LoginActivity> activityScenarioRule =
       new ActivityScenarioRule<LoginActivity>(LoginActivity.class);
