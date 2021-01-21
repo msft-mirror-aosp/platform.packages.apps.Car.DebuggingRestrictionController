@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import com.android.car.debuggingrestrictioncontroller.R;
+import com.android.car.debuggingrestrictioncontroller.ui.ViewModelFactory;
 import com.android.car.debuggingrestrictioncontroller.ui.token.TokenActivity;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -30,7 +31,7 @@ public class LoginActivity extends AppCompatActivity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_login);
-    loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
+    loginViewModel = new ViewModelProvider(this, new ViewModelFactory())
         .get(LoginViewModel.class);
 
     final EditText usernameEditText = findViewById(R.id.username);
@@ -109,7 +110,7 @@ public class LoginActivity extends AppCompatActivity {
       @Override
       public void onClick(View v) {
         loadingProgressBar.setVisibility(View.VISIBLE);
-        if (!loginViewModel.isUserLoggedIn()) {
+        if (!loginViewModel.isUserSignedIn()) {
           loginViewModel.login(usernameEditText.getText().toString(),
               passwordEditText.getText().toString());
         } else {
