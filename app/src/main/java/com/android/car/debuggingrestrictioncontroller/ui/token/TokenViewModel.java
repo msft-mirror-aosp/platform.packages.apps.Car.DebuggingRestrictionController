@@ -50,11 +50,11 @@ public class TokenViewModel extends ViewModel {
             try {
               TokenPayload validatedPayload = TokenValidator
                   .parseAndVerify(task.getResult(), nonce);
+              HashMap<String, Boolean> approvedRestrictions = validatedPayload.getRestrictions();
+              tokenResult.postValue(new TokenResult(new TokenView("OK", approvedRestrictions)));
             } catch (GeneralSecurityException e) {
               tokenResult.postValue(new TokenResult("Invalid access token"));
-              return;
             }
-            tokenResult.postValue(new TokenResult(new TokenView("OK", new HashMap<>())));
           } else {
             tokenResult.postValue(new TokenResult(task.getException().getMessage()));
           }
