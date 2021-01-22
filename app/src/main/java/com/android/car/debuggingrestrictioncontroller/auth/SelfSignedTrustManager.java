@@ -29,18 +29,19 @@ public final class SelfSignedTrustManager implements X509TrustManager {
       throw new GeneralSecurityException(e);
     }
 
-    X509Certificate cert = (X509Certificate) CertificateFactory.getInstance("X.509")
-        .generateCertificate(new ByteArrayInputStream(ROOT_CA.getBytes()));
+    X509Certificate cert =
+        (X509Certificate)
+            CertificateFactory.getInstance("X.509")
+                .generateCertificate(new ByteArrayInputStream(ROOT_CA.getBytes()));
     keyStore.setCertificateEntry(UUID.randomUUID().toString(), cert);
 
-    TrustManagerFactory tmf = TrustManagerFactory
-        .getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    TrustManagerFactory tmf =
+        TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
     tmf.init(keyStore);
     this.trustManager = (X509TrustManager) tmf.getTrustManagers()[0];
   }
 
-  synchronized public static SelfSignedTrustManager getInstance()
-      throws GeneralSecurityException {
+  public static synchronized SelfSignedTrustManager getInstance() throws GeneralSecurityException {
     if (instance == null) {
       instance = new SelfSignedTrustManager();
     }
@@ -60,4 +61,6 @@ public final class SelfSignedTrustManager implements X509TrustManager {
   public X509Certificate[] getAcceptedIssuers() {
     return trustManager.getAcceptedIssuers();
   }
+}
+
 }

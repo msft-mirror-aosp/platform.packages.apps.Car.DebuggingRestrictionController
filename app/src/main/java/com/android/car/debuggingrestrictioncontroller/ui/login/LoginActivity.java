@@ -30,8 +30,10 @@ public class LoginActivity extends AppCompatActivity {
   private static final int REQUEST_TOKEN = 1;
 
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
+
   private final LoginViewModel loginViewModel = new LoginViewModel();
   private Button loginButton;
   private Button nextButton;
@@ -52,92 +54,104 @@ public class LoginActivity extends AppCompatActivity {
     nextButton = findViewById(R.id.next);
     final ProgressBar loadingProgressBar = findViewById(R.id.loading);
 
-    loginViewModel.getLoginFormState().observe(this, new Observer<LoginFormState>() {
-      @Override
-      public void onChanged(@NonNull LoginFormState loginFormState) {
-        loginButton.setEnabled(loginFormState.isDataValid());
-        if (loginFormState.getUsernameError() != null) {
-          usernameEditText.setError(getString(loginFormState.getUsernameError()));
-        }
-        if (loginFormState.getPasswordError() != null) {
-          passwordEditText.setError(getString(loginFormState.getPasswordError()));
-        }
-      }
-    });
+    loginViewModel
+        .getLoginFormState()
+        .observe(
+            this,
+            new Observer<LoginFormState>() {
+              @Override
+              public void onChanged(@NonNull LoginFormState loginFormState) {
+                loginButton.setEnabled(loginFormState.isDataValid());
+                if (loginFormState.getUsernameError() != null) {
+                  usernameEditText.setError(getString(loginFormState.getUsernameError()));
+                }
+                if (loginFormState.getPasswordError() != null) {
+                  passwordEditText.setError(getString(loginFormState.getPasswordError()));
+                }
+              }
+            });
 
-    loginViewModel.getLoginResult().observe(this, new Observer<LoginResult>() {
-      @Override
-      public void onChanged(@NonNull LoginResult loginResult) {
-        loadingProgressBar.setVisibility(View.GONE);
-        if (loginResult.getError() != null) {
-          showSnackBar(R.string.not_signed_in);
-          loginButton.setText(R.string.button_sign_in);
-          nextButton.setEnabled(false);
-        }
-        if (loginResult.getSuccess() != null) {
-          String userName = loginResult.getSuccess().getDisplayName();
-          Log.d(TAG, "User " + userName + " signed in");
-          loginButton.setText(R.string.button_sign_out);
-          nextButton.setEnabled(true);
-        }
-        if (!idlingResource.isIdleNow()) {
-          idlingResource.decrement();
-        }
-      }
-    });
+    loginViewModel
+        .getLoginResult()
+        .observe(
+            this,
+            new Observer<LoginResult>() {
+              @Override
+              public void onChanged(@NonNull LoginResult loginResult) {
+                loadingProgressBar.setVisibility(View.GONE);
+                if (loginResult.getError() != null) {
+                  showSnackBar(R.string.not_signed_in);
+                  loginButton.setText(R.string.button_sign_in);
+                  nextButton.setEnabled(false);
+                }
+                if (loginResult.getSuccess() != null) {
+                  String userName = loginResult.getSuccess().getDisplayName();
+                  Log.d(TAG, "User " + userName + " signed in");
+                  loginButton.setText(R.string.button_sign_out);
+                  nextButton.setEnabled(true);
+                }
+                if (!idlingResource.isIdleNow()) {
+                  idlingResource.decrement();
+                }
+              }
+            });
 
-    TextWatcher afterTextChangedListener = new TextWatcher() {
-      @Override
-      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        // ignore
-      }
+    TextWatcher afterTextChangedListener =
+        new TextWatcher() {
+          @Override
+          public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            // ignore
+          }
 
-      @Override
-      public void onTextChanged(CharSequence s, int start, int before, int count) {
-        // ignore
-      }
+          @Override
+          public void onTextChanged(CharSequence s, int start, int before, int count) {
+            // ignore
+          }
 
-      @Override
-      public void afterTextChanged(Editable s) {
-        loginViewModel.loginDataChanged(usernameEditText.getText().toString(),
-            passwordEditText.getText().toString());
-      }
-    };
+          @Override
+          public void afterTextChanged(Editable s) {
+            loginViewModel.loginDataChanged(
+                usernameEditText.getText().toString(), passwordEditText.getText().toString());
+          }
+        };
     usernameEditText.addTextChangedListener(afterTextChangedListener);
     passwordEditText.addTextChangedListener(afterTextChangedListener);
-    passwordEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-      @Override
-      public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-        if (actionId == EditorInfo.IME_ACTION_DONE) {
-          idlingResource.increment();
-          loginViewModel.login(usernameEditText.getText().toString(),
-              passwordEditText.getText().toString());
-        }
-        return false;
-      }
-    });
+    passwordEditText.setOnEditorActionListener(
+        new TextView.OnEditorActionListener() {
+          @Override
+          public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+              idlingResource.increment();
+              loginViewModel.login(
+                  usernameEditText.getText().toString(), passwordEditText.getText().toString());
+            }
+            return false;
+          }
+        });
 
-    loginButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        idlingResource.increment();
-        loadingProgressBar.setVisibility(View.VISIBLE);
-        if (firebaseAuth.getCurrentUser() == null) {
-          loginViewModel.login(usernameEditText.getText().toString(),
-              passwordEditText.getText().toString());
-        } else {
-          loginViewModel.logout();
-        }
-      }
-    });
+    loginButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            idlingResource.increment();
+            loadingProgressBar.setVisibility(View.VISIBLE);
+            if (firebaseAuth.getCurrentUser() == null) {
+              loginViewModel.login(
+                  usernameEditText.getText().toString(), passwordEditText.getText().toString());
+            } else {
+              loginViewModel.logout();
+            }
+          }
+        });
 
-    nextButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        Intent intent = new Intent(getApplicationContext(), TokenActivity.class);
-        startActivityForResult(intent, REQUEST_TOKEN);
-      }
-    });
+    nextButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            Intent intent = new Intent(getApplicationContext(), TokenActivity.class);
+            startActivityForResult(intent, REQUEST_TOKEN);
+          }
+        });
   }
 
   @Override
@@ -159,8 +173,8 @@ public class LoginActivity extends AppCompatActivity {
   }
 
   private void showSnackBar(@StringRes Integer id) {
-    final Snackbar snackbar = Snackbar
-        .make(findViewById(R.id.login_container), id, Snackbar.LENGTH_SHORT);
+    final Snackbar snackbar =
+        Snackbar.make(findViewById(R.id.login_container), id, Snackbar.LENGTH_SHORT);
     snackbar.show();
   }
 
@@ -175,4 +189,6 @@ public class LoginActivity extends AppCompatActivity {
       nextButton.setEnabled(false);
     }
   }
+}
+
 }

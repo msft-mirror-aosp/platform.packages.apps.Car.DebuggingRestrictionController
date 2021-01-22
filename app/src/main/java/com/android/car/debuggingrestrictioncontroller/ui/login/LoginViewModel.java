@@ -29,22 +29,22 @@ public class LoginViewModel extends ViewModel {
 
   public void login(String email, String password) {
     if (email.isEmpty() || password.isEmpty()) {
-      loginFormState
-          .setValue(new LoginFormState(R.string.invalid_username, R.string.invalid_password));
+      loginFormState.setValue(
+          new LoginFormState(R.string.invalid_username, R.string.invalid_password));
       loginResult.postValue(new LoginResult(ERROR_INVALID_INPUTS));
       return;
     }
-    firebaseAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(
-        task -> {
-          if (task.isSuccessful()) {
-            FirebaseUser user = firebaseAuth.getCurrentUser();
-            loginResult.postValue(
-                new LoginResult(
-                    new LoggedInUserView(user.getDisplayName())));
-          } else {
-            loginResult.postValue(new LoginResult(ERROR_AUTH_FAILED));
-          }
-        });
+    firebaseAuth
+        .signInWithEmailAndPassword(email, password)
+        .addOnCompleteListener(
+            task -> {
+              if (task.isSuccessful()) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                loginResult.postValue(new LoginResult(new LoggedInUserView(user.getDisplayName())));
+              } else {
+                loginResult.postValue(new LoginResult(ERROR_AUTH_FAILED));
+              }
+            });
   }
 
   public void logout() {
@@ -78,4 +78,6 @@ public class LoginViewModel extends ViewModel {
   private boolean isPasswordValid(String password) {
     return password != null && password.trim().length() > 5;
   }
+}
+
 }

@@ -30,8 +30,7 @@ public class TokenViewModel extends ViewModel {
     return tokenResult;
   }
 
-  public void requestAccessToken(
-      @NonNull Map<String, Object> query) {
+  public void requestAccessToken(@NonNull Map<String, Object> query) {
     byte[] nonceBytes = new byte[16];
     SECURE_RANDOM.nextBytes(nonceBytes);
     final String nonce = Base64.encodeToString(nonceBytes, Base64.DEFAULT);
@@ -40,24 +39,28 @@ public class TokenViewModel extends ViewModel {
     firebaseFunctions
         .getHttpsCallable(TOKEN_ISSUER_API_NAME)
         .call(query)
-        .continueWith(task -> {
-          @SuppressWarnings("unchecked")
-          Map<String, Object> result = (Map<String, Object>) task.getResult().getData();
-          return (String) result.get(FIELD_TOKEN);
-        })
-        .addOnCompleteListener(task -> {
-          if (task.isSuccessful()) {
-            try {
-              TokenPayload validatedPayload = TokenValidator
-                  .parseAndVerify(task.getResult(), nonce);
-            } catch (GeneralSecurityException e) {
-              tokenResult.postValue(new TokenResult("Invalid access token"));
-              return;
-            }
-            tokenResult.postValue(new TokenResult(new TokenView("OK", new HashMap<>())));
-          } else {
-            tokenResult.postValue(new TokenResult(task.getException().getMessage()));
-          }
-        });
+        .continueWith(
+            task -> {
+              @SuppressWarnings("unchecked")
+              Map<String, Object> result = (Map<String, Object>) task.getResult().getData();
+              return (String) result.get(FIELD_TOKEN);
+            })
+        .addOnCompleteListener(
+            task -> {
+              if (task.isSuccessful()) {
+                try {
+                  TokenPayload validatedPayload =
+                      TokenValidator.parseAndVerify(task.getResult(), nonce);
+                } catch (GeneralSecurityException e) {
+                  tokenResult.postValue(new TokenResult("Invalid access token"));
+                  return;
+                }
+                tokenResult.postValue(new TokenResult(new TokenView("OK", new HashMap<>())));
+              } else {
+                tokenResult.postValue(new TokenResult(task.getException().getMessage()));
+              }
+            });
   }
+}
+
 }
