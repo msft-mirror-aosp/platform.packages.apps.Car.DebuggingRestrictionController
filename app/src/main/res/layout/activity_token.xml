@@ -24,7 +24,7 @@
         android:layout_marginStart="48dp"
         android:layout_marginEnd="48dp"
         android:layout_gravity="start"
-        android:enabled="true"
+        android:enabled="false"
         android:text="@string/button_agree"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/disagree"
