@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -15,6 +16,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField "String", "DRC_TEST_EMAIL",
+                    "\"${System.env.DRC_TEST_EMAIL}\""
+            buildConfigField "String", "DRC_TEST_PASSWORD",
+                    "\"${System.env.DRC_TEST_PASSWORD}\""
+            testCoverageEnabled true
+        }
         release {
             minifyEnabled false
         }
@@ -37,8 +45,13 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation platform('com.google.firebase:firebase-bom:26.2.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-functions'
+    implementation 'androidx.test.espresso:espresso-idling-resource:3.3.0'
     testImplementation 'junit:junit:4.+'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.3.0'
     androidTestImplementation 'androidx.test.espresso:espresso-intents:3.3.0'
 }
