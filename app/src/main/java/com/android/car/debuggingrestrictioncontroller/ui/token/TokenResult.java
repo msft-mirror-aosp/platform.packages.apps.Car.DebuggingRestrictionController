@@ -4,9 +4,11 @@ import androidx.annotation.Nullable;
 
 public class TokenResult {
 
-  @Nullable private TokenView success;
+  @Nullable
+  private TokenView success;
 
-  @Nullable private String error;
+  @Nullable
+  private String error;
 
   TokenResult(@Nullable TokenView success) {
     this.success = success;

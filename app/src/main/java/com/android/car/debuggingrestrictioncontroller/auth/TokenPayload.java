@@ -19,7 +19,6 @@ package com.android.car.debuggingrestrictioncontroller.auth;
 
 import com.google.api.client.json.webtoken.JsonWebSignature;
 import com.google.api.client.util.Key;
-
 import java.util.HashMap;
 
 public class TokenPayload extends JsonWebSignature.Payload {

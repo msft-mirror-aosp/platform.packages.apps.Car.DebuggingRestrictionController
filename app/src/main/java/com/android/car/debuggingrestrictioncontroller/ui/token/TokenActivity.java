@@ -23,10 +23,8 @@ public class TokenActivity extends AppCompatActivity {
 
   private static final String TAG = TokenActivity.class.getSimpleName();
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
-
   private final TokenViewModel tokenViewModel = new TokenViewModel();
   private Button agreeButton;
   private Button disagreeButton;
@@ -46,54 +44,48 @@ public class TokenActivity extends AppCompatActivity {
     agreeButton = findViewById(R.id.agree);
     disagreeButton = findViewById(R.id.disagree);
 
-    Spanned agreementString =
-        Html.fromHtml(getString(R.string.agreement_text), Html.FROM_HTML_MODE_LEGACY);
+    Spanned agreementString = Html
+        .fromHtml(getString(R.string.agreement_text), Html.FROM_HTML_MODE_LEGACY);
     agreementTextView.setText(agreementString);
 
-    tokenViewModel
-        .getTokenResult()
-        .observe(
-            this,
-            new Observer<TokenResult>() {
-              @Override
-              public void onChanged(@NonNull TokenResult result) {
-                loadingProgressBar.setVisibility(View.GONE);
-                if (!idlingResource.isIdleNow()) {
-                  idlingResource.decrement();
-                }
-                if (result.getError() != null) {
-                  setResult(Activity.RESULT_CANCELED);
-                  finish();
-                }
-                if (result.getSuccess() != null) {
-                  setResult(Activity.RESULT_OK);
-                  Log.d(TAG, "Message: " + result.getSuccess().getMessage());
-                  HashMap<String, Boolean> approvedRestrictions =
-                      result.getSuccess().getApprovedRestrictions();
-                  finish();
-                }
-              }
-            });
+    tokenViewModel.getTokenResult().observe(this, new Observer<TokenResult>() {
+      @Override
+      public void onChanged(@NonNull TokenResult result) {
+        loadingProgressBar.setVisibility(View.GONE);
+        if (!idlingResource.isIdleNow()) {
+          idlingResource.decrement();
+        }
+        if (result.getError() != null) {
+          setResult(Activity.RESULT_CANCELED);
+          finish();
+        }
+        if (result.getSuccess() != null) {
+          setResult(Activity.RESULT_OK);
+          Log.d(TAG, "Message: " + result.getSuccess().getMessage());
+          HashMap<String, Boolean> approvedRestrictions = result.getSuccess()
+              .getApprovedRestrictions();
+          finish();
+        }
+      }
+    });
 
-    agreeButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            idlingResource.increment();
-            Map<String, Object> query = new HashMap<>();
-            loadingProgressBar.setVisibility(View.VISIBLE);
-            tokenViewModel.requestAccessToken(query);
-          }
-        });
+    agreeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        idlingResource.increment();
+        Map<String, Object> query = new HashMap<>();
+        loadingProgressBar.setVisibility(View.VISIBLE);
+        tokenViewModel.requestAccessToken(query);
+      }
+    });
 
-    disagreeButton.setOnClickListener(
-        new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
-            setResult(Activity.RESULT_CANCELED);
-            finishAffinity();
-          }
-        });
+    disagreeButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        setResult(Activity.RESULT_CANCELED);
+        finishAffinity();
+      }
+    });
   }
 
   @Override
@@ -111,6 +103,4 @@ public class TokenActivity extends AppCompatActivity {
       agreeButton.setEnabled(true);
     }
   }
-}
-
 }

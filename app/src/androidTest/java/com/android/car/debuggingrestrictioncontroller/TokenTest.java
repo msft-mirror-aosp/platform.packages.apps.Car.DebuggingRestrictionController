@@ -30,11 +30,9 @@ public class TokenTest {
   private static final String TEST_EMAIL = BuildConfig.DRC_TEST_EMAIL;
   private static final String TEST_PASSWORD = BuildConfig.DRC_TEST_PASSWORD;
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-
   @Rule
   public ActivityScenarioRule<TokenActivity> activityScenarioRule =
       new ActivityScenarioRule<TokenActivity>(TokenActivity.class);
-
   private CountingIdlingResource idlingResource;
 
   public TokenTest() throws ExecutionException, InterruptedException {
@@ -43,12 +41,9 @@ public class TokenTest {
 
   @Before
   public void setUp() {
-    activityScenarioRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              idlingResource = activity.getIdlingResource();
-            });
+    activityScenarioRule.getScenario().onActivity(activity -> {
+      idlingResource = activity.getIdlingResource();
+    });
     IdlingRegistry.getInstance().register(idlingResource);
   }
 
@@ -70,8 +65,7 @@ public class TokenTest {
   public void agree() {
     onView(withId(R.id.agree)).check(matches(isEnabled()));
     onView(withId(R.id.agree)).perform(click());
-    assertThat(
-        activityScenarioRule.getScenario().getResult(),
+    assertThat(activityScenarioRule.getScenario().getResult(),
         ActivityResultMatchers.hasResultCode(Activity.RESULT_OK));
   }
 
@@ -79,8 +73,7 @@ public class TokenTest {
   public void disagree() {
     onView(withId(R.id.disagree)).check(matches(isEnabled()));
     onView(withId(R.id.disagree)).perform(click());
-    assertThat(
-        activityScenarioRule.getScenario().getResult(),
+    assertThat(activityScenarioRule.getScenario().getResult(),
         ActivityResultMatchers.hasResultCode(Activity.RESULT_CANCELED));
   }
 
@@ -88,10 +81,7 @@ public class TokenTest {
   public void userNotSignedIn() {
     firebaseAuth.signOut();
     onView(withId(R.id.agree)).perform(click());
-    assertThat(
-        activityScenarioRule.getScenario().getResult(),
+    assertThat(activityScenarioRule.getScenario().getResult(),
         ActivityResultMatchers.hasResultCode(Activity.RESULT_CANCELED));
   }
-}
-}
 }

@@ -49,17 +49,13 @@ public class LoginTest {
   @Rule
   public ActivityScenarioRule<LoginActivity> activityScenarioRule =
       new ActivityScenarioRule<LoginActivity>(LoginActivity.class);
-
   private CountingIdlingResource idlingResource;
 
   @Before
   public void setUp() {
-    activityScenarioRule
-        .getScenario()
-        .onActivity(
-            activity -> {
-              idlingResource = activity.getIdlingResource();
-            });
+    activityScenarioRule.getScenario().onActivity(activity -> {
+      idlingResource = activity.getIdlingResource();
+    });
     IdlingRegistry.getInstance().register(idlingResource);
     Intents.init();
     firebaseAuth.signOut();
@@ -75,7 +71,8 @@ public class LoginTest {
   @Test
   public void invalidEmail() {
     Context ctx = getApplicationContext();
-    onView(withId(R.id.username)).perform(typeText(INVALID_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(INVALID_EMAIL), ViewActions.closeSoftKeyboard());
     onView(withId(R.id.username))
         .check(matches(hasErrorText(ctx.getString(R.string.invalid_username))));
     onView(withId(R.id.login)).check(matches(not(isEnabled())));
@@ -84,7 +81,8 @@ public class LoginTest {
   @Test
   public void invalidPassword() {
     Context ctx = getApplicationContext();
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
     onView(withId(R.id.password))
         .perform(typeText(SHORT_PASSWORD), ViewActions.closeSoftKeyboard());
     onView(withId(R.id.password))
@@ -102,7 +100,8 @@ public class LoginTest {
 
   @Test
   public void wrongPassword() {
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
     onView(withId(R.id.password))
         .perform(typeText(WRONG_PASSWORD), ViewActions.pressImeActionButton());
     onView(withId(R.id.next)).check(matches(not(isEnabled())));
@@ -111,8 +110,10 @@ public class LoginTest {
 
   @Test
   public void userLogout() {
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
-    onView(withId(R.id.password)).perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
 
     onView(withId(R.id.login)).check(matches(isEnabled()));
     onView(withId(R.id.login)).check(matches(withText(R.string.button_sign_in)));
@@ -127,18 +128,19 @@ public class LoginTest {
 
   @Test
   public void startTokenActivity() {
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
-    onView(withId(R.id.password)).perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
 
     onView(withId(R.id.login)).check(matches(isEnabled()));
     onView(withId(R.id.login)).perform(click());
     onView(withId(R.id.next)).check(matches(isEnabled()));
     onView(withId(R.id.next)).perform(click());
 
-    intended(
-        allOf(
-            toPackage(getApplicationContext().getPackageName()),
-            hasComponent(TokenActivity.class.getName())));
+    intended(allOf(
+        toPackage(getApplicationContext().getPackageName()),
+        hasComponent(TokenActivity.class.getName())));
     onView(withId(R.id.agreement)).check(matches(isDisplayed()));
     onView(withId(R.id.agree)).check(matches(isDisplayed()));
     onView(withId(R.id.disagree)).check(matches(isDisplayed()));
@@ -149,14 +151,14 @@ public class LoginTest {
   public void returnedFromTokenActivityOK() {
     Intent intent = new Intent(getApplicationContext(), TokenActivity.class);
     ActivityResult result = new ActivityResult(Activity.RESULT_OK, intent);
-    intending(
-            allOf(
-                toPackage(getApplicationContext().getPackageName()),
-                hasComponent(TokenActivity.class.getName())))
-        .respondWith(result);
+    intending(allOf(
+        toPackage(getApplicationContext().getPackageName()),
+        hasComponent(TokenActivity.class.getName()))).respondWith(result);
 
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
-    onView(withId(R.id.password)).perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
 
     onView(withId(R.id.login)).check(matches(isEnabled()));
     onView(withId(R.id.login)).perform(click());
@@ -172,14 +174,14 @@ public class LoginTest {
   public void returnedFromTokenActivityCancelled() {
     Intent intent = new Intent(getApplicationContext(), TokenActivity.class);
     ActivityResult result = new ActivityResult(Activity.RESULT_CANCELED, intent);
-    intending(
-            allOf(
-                toPackage(getApplicationContext().getPackageName()),
-                hasComponent(TokenActivity.class.getName())))
-        .respondWith(result);
+    intending(allOf(
+        toPackage(getApplicationContext().getPackageName()),
+        hasComponent(TokenActivity.class.getName()))).respondWith(result);
 
-    onView(withId(R.id.username)).perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
-    onView(withId(R.id.password)).perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.username))
+        .perform(typeText(TEST_EMAIL), ViewActions.closeSoftKeyboard());
+    onView(withId(R.id.password))
+        .perform(typeText(TEST_PASSWORD), ViewActions.closeSoftKeyboard());
 
     onView(withId(R.id.login)).check(matches(isEnabled()));
     onView(withId(R.id.login)).perform(click());
@@ -190,6 +192,4 @@ public class LoginTest {
         .check(matches(withText(R.string.token_unauthorized)));
     firebaseAuth.signOut();
   }
-}
-}
 }
