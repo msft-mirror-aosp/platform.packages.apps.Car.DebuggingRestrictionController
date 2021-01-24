@@ -22,8 +22,6 @@ import java.util.Map;
 public class TokenActivity extends AppCompatActivity {
 
   private static final String TAG = TokenActivity.class.getSimpleName();
-  private static final String API_NAME = "requestAccessToken";
-
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
@@ -77,7 +75,7 @@ public class TokenActivity extends AppCompatActivity {
         idlingResource.increment();
         Map<String, Object> query = new HashMap<>();
         loadingProgressBar.setVisibility(View.VISIBLE);
-        tokenViewModel.requestAccessToken("", API_NAME, query);
+        tokenViewModel.requestAccessToken(query);
       }
     });
 
