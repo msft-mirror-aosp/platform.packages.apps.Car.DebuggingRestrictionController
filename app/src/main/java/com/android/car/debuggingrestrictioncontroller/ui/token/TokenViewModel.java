@@ -1,12 +1,15 @@
 package com.android.car.debuggingrestrictioncontroller.ui.token;
 
 import android.util.Base64;
-import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import com.android.car.debuggingrestrictioncontroller.BuildConfig;
+import com.android.car.debuggingrestrictioncontroller.auth.TokenPayload;
+import com.android.car.debuggingrestrictioncontroller.auth.TokenValidator;
 import com.google.firebase.functions.FirebaseFunctions;
+import java.security.GeneralSecurityException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,6 +17,8 @@ import java.util.Map;
 public class TokenViewModel extends ViewModel {
 
   private static final String TAG = TokenViewModel.class.getSimpleName();
+  private static final String TOKEN_ISSUER_API_NAME = BuildConfig.TOKEN_ISSUER_API_NAME;
+
   private static final String FIELD_NONCE = "nonce";
   private static final String FIELD_TOKEN = "token";
 
@@ -25,7 +30,7 @@ public class TokenViewModel extends ViewModel {
     return tokenResult;
   }
 
-  public void requestAccessToken(@NonNull String hostName, @NonNull String apiName,
+  public void requestAccessToken(
       @NonNull Map<String, Object> query) {
     byte[] nonceBytes = new byte[16];
     SECURE_RANDOM.nextBytes(nonceBytes);
@@ -33,15 +38,22 @@ public class TokenViewModel extends ViewModel {
     query.put(FIELD_NONCE, nonce);
 
     firebaseFunctions
-        .getHttpsCallable(apiName)
+        .getHttpsCallable(TOKEN_ISSUER_API_NAME)
         .call(query)
         .continueWith(task -> {
+          @SuppressWarnings("unchecked")
           Map<String, Object> result = (Map<String, Object>) task.getResult().getData();
           return (String) result.get(FIELD_TOKEN);
         })
         .addOnCompleteListener(task -> {
           if (task.isSuccessful()) {
-            Log.d(TAG, "Token: " + task.getResult());
+            try {
+              TokenPayload validatedPayload = TokenValidator
+                  .parseAndVerify(task.getResult(), nonce);
+            } catch (GeneralSecurityException e) {
+              tokenResult.postValue(new TokenResult("Invalid access token"));
+              return;
+            }
             tokenResult.postValue(new TokenResult(new TokenView("OK", new HashMap<>())));
           } else {
             tokenResult.postValue(new TokenResult(task.getException().getMessage()));
