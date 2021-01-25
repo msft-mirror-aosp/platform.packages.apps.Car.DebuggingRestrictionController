@@ -4,3 +4,5 @@
 /.idea
 .DS_Store
 build/
+app/google-services.json
+app/*.pem
