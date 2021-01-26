@@ -1,7 +1,9 @@
 package com.android.car.debuggingrestrictioncontroller.ui.token;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -15,17 +17,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.test.espresso.idling.CountingIdlingResource;
 import com.android.car.debuggingrestrictioncontroller.R;
+import com.google.common.collect.ImmutableSet;
 import com.google.firebase.auth.FirebaseAuth;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TokenActivity extends AppCompatActivity {
 
   private static final String TAG = TokenActivity.class.getSimpleName();
+  private static final Set<String> SUPPORTED_RESTRICTIONS = ImmutableSet.of(
+      UserManager.DISALLOW_DEBUGGING_FEATURES
+  );
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
   private final TokenViewModel tokenViewModel = new TokenViewModel();
+  private UserManager userManager;
   private Button agreeButton;
   private Button disagreeButton;
 
@@ -37,6 +45,7 @@ public class TokenActivity extends AppCompatActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    userManager = getSystemService(UserManager.class);
     setContentView(R.layout.activity_token);
 
     final TextView agreementTextView = findViewById(R.id.agreement);
@@ -60,10 +69,20 @@ public class TokenActivity extends AppCompatActivity {
           finish();
         }
         if (result.getSuccess() != null) {
-          setResult(Activity.RESULT_OK);
+
           Log.d(TAG, "Message: " + result.getSuccess().getMessage());
           HashMap<String, Boolean> approvedRestrictions = result.getSuccess()
               .getApprovedRestrictions();
+          approvedRestrictions.entrySet()
+              .removeIf(entry -> !SUPPORTED_RESTRICTIONS.contains(entry.getKey()));
+          try {
+            approvedRestrictions.entrySet().forEach(entry ->
+                userManager.setUserRestriction(entry.getKey(), entry.getValue()));
+            setResult(Activity.RESULT_OK);
+          } catch (SecurityException e) {
+            Log.e(TAG, "This app requires the MANAGE_USERS permission");
+            setResult(Activity.RESULT_CANCELED);
+          }
           finish();
         }
       }
