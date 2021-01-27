@@ -24,20 +24,21 @@ public final class TokenValidator {
 
   private static final String TAG = TokenValidator.class.getSimpleName();
   private static final String TOKEN_ISSUER_HOST_NAME = BuildConfig.TOKEN_ISSUER_HOST_NAME;
-  private static final HostnameVerifier HOSTNAME_VERIFIER = HttpsURLConnection
-      .getDefaultHostnameVerifier();
+  private static final HostnameVerifier HOSTNAME_VERIFIER =
+      HttpsURLConnection.getDefaultHostnameVerifier();
 
   private static final Duration ACCEPTABLE_TIME_SKEW = Duration.ofMinutes(1);
 
-  public static TokenPayload parseAndVerify(@NonNull String authTokenString,
-      @NonNull String expectedNonce)
+  public static TokenPayload parseAndVerify(
+      @NonNull String authTokenString, @NonNull String expectedNonce)
       throws GeneralSecurityException {
     JsonWebSignature jws;
     // Step 0: Parse the string into a JWS
     try {
-      jws = JsonWebSignature.parser(JacksonFactory.getDefaultInstance())
-          .setPayloadClass(TokenPayload.class)
-          .parse(authTokenString);
+      jws =
+          JsonWebSignature.parser(JacksonFactory.getDefaultInstance())
+              .setPayloadClass(TokenPayload.class)
+              .parse(authTokenString);
     } catch (IOException e) {
       throw new GeneralSecurityException(e);
     }
@@ -55,7 +56,7 @@ public final class TokenValidator {
 
     // Step 2: verify the signature certificate matches the specified hostname
     StubSSLSession session = new StubSSLSession();
-    session.certificates = new Certificate[]{cert};
+    session.certificates = new Certificate[] {cert};
     if (!HOSTNAME_VERIFIER.verify(TOKEN_ISSUER_HOST_NAME, session)) {
       throw new GeneralSecurityException(new UnknownHostException("Unexpected hostname"));
     }
@@ -66,8 +67,9 @@ public final class TokenValidator {
       throw new GeneralSecurityException("Nonce mismatch");
     }
 
-    if (Instant.now().minus(ACCEPTABLE_TIME_SKEW).isAfter(
-        Instant.ofEpochSecond(payload.getExpirationTimeSeconds()))) {
+    if (Instant.now()
+        .minus(ACCEPTABLE_TIME_SKEW)
+        .isAfter(Instant.ofEpochSecond(payload.getExpirationTimeSeconds()))) {
       throw new CertificateExpiredException("Token expired");
     }
     return payload;

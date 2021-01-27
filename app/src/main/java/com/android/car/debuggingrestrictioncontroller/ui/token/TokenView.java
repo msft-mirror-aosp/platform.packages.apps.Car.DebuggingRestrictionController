@@ -2,9 +2,7 @@ package com.android.car.debuggingrestrictioncontroller.ui.token;
 
 import java.util.HashMap;
 
-/**
- * Class exposing access token details to the UI.
- */
+/** Class exposing access token details to the UI. */
 class TokenView {
 
   private final String message;
