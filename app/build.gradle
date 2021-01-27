@@ -14,11 +14,19 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField "boolean", "TOKEN_USES_SELF_SIGNED_CA", "true"
-        buildConfigField "String", "ROOT_CA_CERT",
-                "\"${new File("app/RootCA.pem").getText('UTF-8').replaceAll("\\R", "\\\\n")}\""
-        buildConfigField "String", "TOKEN_ISSUER_API_NAME", "\"requestAccessToken\""
-        buildConfigField "String", "TOKEN_ISSUER_HOST_NAME", "\"testserver.com\""
+        def rootCACertFile = new File("${System.env.DRC_ROOT_CA_CERT}")
+        if (!rootCACertFile.isFile()) {
+            buildConfigField "boolean", "TOKEN_USES_SELF_SIGNED_CA", "false"
+            buildConfigField "String", "ROOT_CA_CERT", "\"\""
+        } else {
+            buildConfigField "boolean", "TOKEN_USES_SELF_SIGNED_CA", "true"
+            buildConfigField "String", "ROOT_CA_CERT",
+                    "\"${rootCACertFile.getText("UTF-8").replaceAll("\\R", "\\\\n")}\""
+        }
+        buildConfigField "String", "TOKEN_ISSUER_HOST_NAME",
+                "\"${System.env.DRC_API_HOSTNAME}\""
+        buildConfigField "String", "TOKEN_ISSUER_API_NAME",
+                "\"${System.env.DRC_API_NAME}\""
     }
 
     buildTypes {
