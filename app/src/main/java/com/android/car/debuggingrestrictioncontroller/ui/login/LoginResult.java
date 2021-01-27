@@ -2,15 +2,11 @@ package com.android.car.debuggingrestrictioncontroller.ui.login;
 
 import androidx.annotation.Nullable;
 
-/**
- * Authentication result : success (user details) or error message.
- */
+/** Authentication result : success (user details) or error message. */
 class LoginResult {
 
-  @Nullable
-  private LoggedInUserView success;
-  @Nullable
-  private Integer error;
+  @Nullable private LoggedInUserView success;
+  @Nullable private Integer error;
 
   LoginResult(@Nullable Integer error) {
     this.error = error;
