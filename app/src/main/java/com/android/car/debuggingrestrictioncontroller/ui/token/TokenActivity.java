@@ -2,6 +2,7 @@ package com.android.car.debuggingrestrictioncontroller.ui.token;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
@@ -15,17 +16,24 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.test.espresso.idling.CountingIdlingResource;
 import com.android.car.debuggingrestrictioncontroller.R;
+import com.google.common.collect.ImmutableSet;
 import com.google.firebase.auth.FirebaseAuth;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class TokenActivity extends AppCompatActivity {
 
   private static final String TAG = TokenActivity.class.getSimpleName();
+  private static final Set<String> SUPPORTED_RESTRICTIONS =
+      ImmutableSet.of(UserManager.DISALLOW_DEBUGGING_FEATURES);
   private final FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+
   @VisibleForTesting
   private final CountingIdlingResource idlingResource = new CountingIdlingResource(TAG);
+
   private final TokenViewModel tokenViewModel = new TokenViewModel();
+  private UserManager userManager;
   private Button agreeButton;
   private Button disagreeButton;
 
@@ -37,6 +45,7 @@ public class TokenActivity extends AppCompatActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    userManager = getSystemService(UserManager.class);
     setContentView(R.layout.activity_token);
 
     final TextView agreementTextView = findViewById(R.id.agreement);
@@ -44,48 +53,68 @@ public class TokenActivity extends AppCompatActivity {
     agreeButton = findViewById(R.id.agree);
     disagreeButton = findViewById(R.id.disagree);
 
-    Spanned agreementString = Html
-        .fromHtml(getString(R.string.agreement_text), Html.FROM_HTML_MODE_LEGACY);
+    Spanned agreementString =
+        Html.fromHtml(getString(R.string.agreement_text), Html.FROM_HTML_MODE_LEGACY);
     agreementTextView.setText(agreementString);
 
-    tokenViewModel.getTokenResult().observe(this, new Observer<TokenResult>() {
-      @Override
-      public void onChanged(@NonNull TokenResult result) {
-        loadingProgressBar.setVisibility(View.GONE);
-        if (!idlingResource.isIdleNow()) {
-          idlingResource.decrement();
-        }
-        if (result.getError() != null) {
-          setResult(Activity.RESULT_CANCELED);
-          finish();
-        }
-        if (result.getSuccess() != null) {
-          setResult(Activity.RESULT_OK);
-          Log.d(TAG, "Message: " + result.getSuccess().getMessage());
-          HashMap<String, Boolean> approvedRestrictions = result.getSuccess()
-              .getApprovedRestrictions();
-          finish();
-        }
-      }
-    });
+    tokenViewModel
+        .getTokenResult()
+        .observe(
+            this,
+            new Observer<TokenResult>() {
+              @Override
+              public void onChanged(@NonNull TokenResult result) {
+                loadingProgressBar.setVisibility(View.GONE);
+                if (!idlingResource.isIdleNow()) {
+                  idlingResource.decrement();
+                }
+                if (result.getError() != null) {
+                  setResult(Activity.RESULT_CANCELED);
+                  finish();
+                }
+                if (result.getSuccess() != null) {
 
-    agreeButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        idlingResource.increment();
-        Map<String, Object> query = new HashMap<>();
-        loadingProgressBar.setVisibility(View.VISIBLE);
-        tokenViewModel.requestAccessToken(query);
-      }
-    });
+                  Log.d(TAG, "Message: " + result.getSuccess().getMessage());
+                  HashMap<String, Boolean> approvedRestrictions =
+                      result.getSuccess().getApprovedRestrictions();
+                  approvedRestrictions
+                      .entrySet()
+                      .removeIf(entry -> !SUPPORTED_RESTRICTIONS.contains(entry.getKey()));
+                  try {
+                    approvedRestrictions
+                        .entrySet()
+                        .forEach(
+                            entry ->
+                                userManager.setUserRestriction(entry.getKey(), entry.getValue()));
+                    setResult(Activity.RESULT_OK);
+                  } catch (SecurityException e) {
+                    Log.e(TAG, "This app requires the MANAGE_USERS permission");
+                    setResult(Activity.RESULT_CANCELED);
+                  }
+                  finish();
+                }
+              }
+            });
 
-    disagreeButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        setResult(Activity.RESULT_CANCELED);
-        finishAffinity();
-      }
-    });
+    agreeButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            idlingResource.increment();
+            Map<String, Object> query = new HashMap<>();
+            loadingProgressBar.setVisibility(View.VISIBLE);
+            tokenViewModel.requestAccessToken(query);
+          }
+        });
+
+    disagreeButton.setOnClickListener(
+        new View.OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            setResult(Activity.RESULT_CANCELED);
+            finishAffinity();
+          }
+        });
   }
 
   @Override
