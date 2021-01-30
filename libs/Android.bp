@@ -1,8 +1,57 @@
 android_library_import {
-    name: "drc-lib-firebase-functions-16.1.0",
-    aars: ["firebase-functions-16.1.0.aar"],
+    name: "drc-lib-firebase-functions-19.2.0",
+    aars: ["firebase-functions-19.2.0.aar"],
     sdk_version: "current",
 }
+
+android_library_import {
+    name: "drc-lib-play-services-base-17.1.0",
+    aars: ["play-services-base-17.1.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-stats-17.0.0",
+    aars: ["play-services-stats-17.0.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-basement-17.1.0",
+    aars: ["play-services-basement-17.1.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-firebase-iid-21.0.1",
+    aars: ["firebase-iid-21.0.1.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-tasks-17.0.0",
+    aars: ["play-services-tasks-17.0.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-firebase-installations-interop-16.0.1",
+    aars: ["firebase-installations-interop-16.0.1.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-firebase-auth-interop-19.0.0",
+    aars: ["firebase-auth-interop-19.0.0.aar"],
+    sdk_version: "current",
+}
+
 
 android_library_import {
     name: "drc-lib-firebase-components-16.1.0",
@@ -10,15 +59,52 @@ android_library_import {
     sdk_version: "current",
 }
 
+
+android_library_import {
+    name: "drc-lib-firebase-iid-interop-17.0.0",
+    aars: ["firebase-iid-interop-17.0.0.aar"],
+    sdk_version: "current",
+}
+
+
 android_library_import {
     name: "drc-lib-firebase-installations-16.3.5",
     aars: ["firebase-installations-16.3.5.aar"],
     sdk_version: "current",
 }
 
+
 android_library_import {
-    name: "drc-lib-firebase-installations-interop-16.0.1",
-    aars: ["firebase-installations-interop-16.0.1.aar"],
+    name: "drc-lib-firebase-auth-20.0.1",
+    aars: ["firebase-auth-20.0.1.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-cloud-messaging-16.0.0",
+    aars: ["play-services-cloud-messaging-16.0.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-safetynet-17.0.0",
+    aars: ["play-services-safetynet-17.0.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-firebase-common-19.5.0",
+    aars: ["firebase-common-19.5.0.aar"],
+    sdk_version: "current",
+}
+
+
+android_library_import {
+    name: "drc-lib-play-services-auth-api-phone-17.4.0",
+    aars: ["play-services-auth-api-phone-17.4.0.aar"],
     sdk_version: "current",
 }
 
@@ -32,8 +118,8 @@ java_import {
         "httpclient-4.5.12.jar",
         "httpcore-4.4.13.jar",
         "jackson-core-2.11.1.jar",
-        "okhttp-2.7.2.jar",
-        "okio-1.6.0.jar",
+        "okhttp-3.12.1.jar",
+        "okio-1.15.0.jar",
         "opencensus-api-0.24.0.jar",
         "opencensus-contrib-http-util-0.24.0.jar",
     ],
