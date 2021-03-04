@@ -1,3 +1,7 @@
+package {
+    default_applicable_licenses: ["Android-Apache-2.0"],
+}
+
 android_library_import {
     name: "drc-lib-firebase-functions-19.2.0",
     aars: ["firebase-functions-19.2.0.aar"],
